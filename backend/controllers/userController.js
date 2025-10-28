@@ -1,11 +1,22 @@
-exports.getUsers = (req, res) => {
-  res.json([
-    { id: 1, name: 'Nguyễn Văn A' },
-    { id: 2, name: 'Trần Thị B' }
-  ]);
+const User = require('../models/User'); // đường dẫn phải chính xác
+
+exports.getUsers = async (req, res) => {
+  try {
+    const users = await User.find();
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
-exports.addUser = (req, res) => {
-  const newUser = req.body;
-  res.status(201).json({ message: 'User added', user: newUser });
+exports.addUser = async (req, res) => {
+  try {
+    const { name, email } = req.body;
+    console.log("📦 req.body:", req.body); // kiểm tra body
+    const newUser = new User({ name, email }); // ← lỗi ở đây nếu User undefined
+    await newUser.save();
+    res.status(201).json(newUser);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
 };
