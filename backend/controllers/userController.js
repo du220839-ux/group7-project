@@ -1,16 +1,11 @@
-let users = [];
-
 exports.getUsers = (req, res) => {
-  res.json(users);
+  res.json([
+    { id: 1, name: 'Nguyễn Văn A' },
+    { id: 2, name: 'Trần Thị B' }
+  ]);
 };
 
-exports.createUser = (req, res) => {
-  const { name, email } = req.body;
-  const newUser = {
-    id: users.length + 1,
-    name,
-    email
-  };
-  users.push(newUser);
-  res.status(201).json(newUser);
+exports.addUser = (req, res) => {
+  const newUser = req.body;
+  res.status(201).json({ message: 'User added', user: newUser });
 };
