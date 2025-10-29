@@ -1,39 +1,53 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-function UserList() {
+function UserList({ refresh }) {
   const [users, setUsers] = useState([]);
-  const [editingUser, setEditingUser] = useState(null);
+  const [editingUserId, setEditingUserId] = useState(null);
   const [editData, setEditData] = useState({ name: "", email: "" });
 
-  // Lấy danh sách user
+  // Gọi lại khi có refresh (khi thêm user mới)
   useEffect(() => {
     fetchUsers();
-  }, []);
+  }, [refresh]);
 
+  // Lấy danh sách user từ backend
   const fetchUsers = async () => {
-    const res = await axios.get("http://localhost:5000/api/users");
-    setUsers(res.data);
+    try {
+      const res = await axios.get("http://localhost:5000/api/users");
+      setUsers(res.data);
+    } catch (err) {
+      console.error("❌ Lỗi khi lấy danh sách users:", err);
+    }
   };
 
   // Xóa user
-  const handleDelete = async (id) => {
+  const handleDelete = async (userId) => {
     if (!window.confirm("Bạn có chắc muốn xóa user này?")) return;
-    await axios.delete(`http://localhost:5000/api/users/${id}`);
-    fetchUsers();
+    try {
+      await axios.delete(`http://localhost:5000/api/users/${userId}`);
+      fetchUsers();
+    } catch (err) {
+      console.error("❌ Lỗi khi xóa user:", err);
+    }
   };
 
-  // Bắt đầu sửa user
+  // Chỉnh sửa user
   const handleEdit = (user) => {
-    setEditingUser(user._id);
+    setEditingUserId(user._id);
     setEditData({ name: user.name, email: user.email });
   };
 
-  // Lưu sau khi sửa
-  const handleSave = async (id) => {
-    await axios.put(`http://localhost:5000/api/users/${id}`, editData);
-    setEditingUser(null);
-    fetchUsers();
+  // Lưu user sau khi sửa
+  const handleSave = async (userId) => {
+    try {
+      await axios.put(`http://localhost:5000/api/users/${userId}`, editData);
+      alert("✅ Cập nhật thành công!");
+      setEditingUserId(null);
+      fetchUsers();
+    } catch (err) {
+      console.error("❌ Lỗi khi cập nhật user:", err);
+    }
   };
 
   return (
@@ -42,7 +56,7 @@ function UserList() {
       <ul>
         {users.map((user) => (
           <li key={user._id}>
-            {editingUser === user._id ? (
+            {editingUserId === user._id ? (
               <>
                 <input
                   value={editData.name}
@@ -57,7 +71,7 @@ function UserList() {
                   }
                 />
                 <button onClick={() => handleSave(user._id)}>Lưu</button>
-                <button onClick={() => setEditingUser(null)}>Hủy</button>
+                <button onClick={() => setEditingUserId(null)}>Hủy</button>
               </>
             ) : (
               <>
